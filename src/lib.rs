@@ -3,6 +3,8 @@
 #![feature(async_fn_in_trait)]
 #![feature(return_position_impl_trait_in_trait)]
 
+pub mod box_service;
+pub mod client;
 pub mod mock;
 pub mod retry;
 pub mod timeout;
@@ -15,3 +17,5 @@ pub trait Service<Req> {
 
     async fn call(&self, req: Req) -> Result<Self::Res, Self::Err>;
 }
+
+// pub fn service_fn(

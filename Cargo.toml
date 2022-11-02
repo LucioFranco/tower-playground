@@ -1,5 +1,5 @@
 [package]
-name = "tower-playground"
+name = "tower"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -8,4 +8,5 @@ publish = false
 
 [dependencies]
 tokio = { path = "../tokio/tokio", features = ["full"] }
+hyper = { version = "1.0.0-rc.1", features = ["full"] }
 thiserror = "1"
