@@ -27,9 +27,9 @@ pub fn pair<Req, Res>() -> (Mock<Req, Res>, Handle<Req, Res>) {
 
 impl<Req, Res> Service<Req> for Mock<Req, Res> {
     type Res = Res;
-    type Err = MockError;
+    type Error = MockError;
 
-    async fn call(&self, req: Req) -> Result<Self::Res, Self::Err> {
+    async fn call(&self, req: Req) -> Result<Self::Res, Self::Error> {
         let (tx, rx) = oneshot::channel();
 
         self.tx

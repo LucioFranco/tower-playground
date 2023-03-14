@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+pub use tokio::time::error::Elapsed;
+
 use crate::Service;
 
 pub struct Timeout<S> {
@@ -12,22 +14,17 @@ where
     S: Service<Req>,
 {
     type Res = S::Res;
-    type Err = TimeoutError<S::Err>;
+    type Error = Elapsed;
 
-    async fn call(&self, req: Req) -> Result<Self::Res, Self::Err> {
-        tokio::select! {
-            res = self.inner.call(req) => {
-                res.map_err(TimeoutError::Svc)
-            }
-
-             _ = tokio::time::sleep(self.duration) => {
-                 Err(TimeoutError::Elapsed)
-            }
-        }
+    async fn call(&self, req: Req) -> Result<Self::Res, Self::Error> {
+        // tokio::time::timeout(self.duration, self.inner.call(req))
+        //     .await
+        todo!()
     }
 }
 
-pub enum TimeoutError<E> {
-    Svc(E),
-    Elapsed,
+crate::layer! {
+    struct TimeoutLayer for Timeout<S> {
+        duration: Duration,
+    }
 }

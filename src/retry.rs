@@ -5,20 +5,20 @@ pub struct Retry<S, C> {
     classify: C,
 }
 
-pub trait Classify<Req, Res, Err> {
-    fn is_retryable(&self, req: &Req, res: &mut Result<Res, Err>) -> bool;
+pub trait Classify<Req, Res, E> {
+    fn is_retryable(&self, req: &Req, res: &mut Result<Res, E>) -> bool;
 }
 
 impl<S, C, Req> Service<Req> for Retry<S, C>
 where
     S: Service<Req>,
     Req: Clone,
-    C: Classify<Req, S::Res, S::Err>,
+    C: Classify<Req, S::Res, S::Error>,
 {
     type Res = S::Res;
-    type Err = S::Err;
+    type Error = S::Error;
 
-    async fn call(&self, req: Req) -> Result<Self::Res, Self::Err> {
+    async fn call(&self, req: Req) -> Result<Self::Res, Self::Error> {
         loop {
             let mut res = self.inner.call(req.clone()).await;
 
