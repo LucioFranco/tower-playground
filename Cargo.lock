@@ -486,6 +486,7 @@ dependencies = [
  "hyper-util",
  "thiserror",
  "tokio 1.21.2",
+ "tower-service",
 ]
 
 [[package]]

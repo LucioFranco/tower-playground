@@ -4,9 +4,11 @@
 pub mod box_service;
 pub mod buffer;
 pub mod client;
+pub mod compat;
 pub mod limit;
 pub mod mock;
 pub mod retry;
+pub mod server;
 pub mod timeout;
 
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
