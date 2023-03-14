@@ -1,6 +1,6 @@
 use crate::Service;
 
-type BoxFuture<'a, T> = std::pin::Pin<Box<dyn 'a + std::future::Future<Output = T>>>;
+type BoxFuture<'a, T> = std::pin::Pin<Box<dyn 'a + std::future::Future<Output = T> + Send>>;
 
 pub struct BoxService<'a, Req, Res, Err> {
     b: Box<dyn 'a + DynService<Req, Res = Res, Error = Err>>,
@@ -10,6 +10,8 @@ impl<'a, Req, Res, Err> BoxService<'a, Req, Res, Err> {
     pub fn new<T>(service: T) -> Self
     where
         T: 'a + Service<Req, Res = Res, Error = Err>,
+        T::Error: Send,
+        T::Res: Send,
     {
         Self {
             b: Box::new(service),
@@ -38,6 +40,8 @@ trait DynService<Req> {
 impl<T, Req> DynService<Req> for T
 where
     T: Service<Req>,
+    T::Res: Send,
+    T::Error: Send,
 {
     type Res = <T as Service<Req>>::Res;
     type Error = <T as Service<Req>>::Error;
