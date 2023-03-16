@@ -1,12 +1,15 @@
 #![allow(warnings)]
 #![feature(async_fn_in_trait)]
+#![feature(associated_return_type_bounds)]
 
 pub mod box_service;
 pub mod buffer;
 pub mod client;
+// pub mod compat;
 pub mod limit;
 pub mod mock;
 pub mod retry;
+pub mod server;
 pub mod timeout;
 
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
@@ -17,6 +20,18 @@ pub trait Service<Req> {
 
     async fn call(&self, req: Req) -> Result<Self::Res, Self::Error>;
 }
+
+// impl<T, Req> Service<Req> for &T
+// where
+//     T: Service<Req>,
+// {
+//     type Res = T::Res;
+//     type Error = T::Error;
+
+//     async fn call(&self, req: Req) -> Result<T::Res, T::Error> {
+//         <T as Service<Req>>::call(self, req).await
+//     }
+// }
 
 pub trait Layer<S> {
     type Service;
