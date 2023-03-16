@@ -3,13 +3,13 @@ use crate::Service;
 type BoxFuture<'a, T> = std::pin::Pin<Box<dyn 'a + std::future::Future<Output = T> + Send>>;
 
 pub struct BoxService<'a, Req, Res, Err> {
-    b: Box<dyn 'a + DynService<Req, Res = Res, Error = Err>>,
+    b: Box<dyn 'a + DynService<Req, Res = Res, Error = Err> + Send>,
 }
 
 impl<'a, Req, Res, Err> BoxService<'a, Req, Res, Err> {
     pub fn new<T>(service: T) -> Self
     where
-        T: 'a + Service<Req, Res = Res, Error = Err>,
+        T: 'a + Service<Req, Res = Res, Error = Err, call(): Send> + Send,
         T::Error: Send,
         T::Res: Send,
     {
@@ -19,7 +19,7 @@ impl<'a, Req, Res, Err> BoxService<'a, Req, Res, Err> {
     }
 }
 
-impl<'a, Req, Res, Err> Service<Req> for BoxService<'a, Req, Res, Err> {
+impl<'a, Req: Send, Res, Err> Service<Req> for BoxService<'a, Req, Res, Err> {
     type Res = Res;
     type Error = Err;
 
@@ -34,24 +34,33 @@ trait DynService<Req> {
 
     fn call<'a>(&'a self, req: Req) -> BoxFuture<'a, Result<Self::Res, Self::Error>>
     where
-        Req: 'a;
+        Req: 'a + Send;
 }
 
 impl<T, Req> DynService<Req> for T
 where
-    T: Service<Req>,
+    T: Service<Req> + Send,
     T::Res: Send,
     T::Error: Send,
+    T: Service<Req, call(): Send>,
 {
     type Res = <T as Service<Req>>::Res;
     type Error = <T as Service<Req>>::Error;
 
     fn call<'a>(&'a self, req: Req) -> BoxFuture<'a, Result<Self::Res, Self::Error>>
     where
-        Req: 'a,
+        Req: 'a + Send,
     {
+        // Box::pin(call_send(&self, req))
         Box::pin(self.call(req))
     }
+}
+
+async fn call_send<Req, Res, E>(
+    svc: &impl Service<Req, Res = Res, Error = E>,
+    req: Req,
+) -> Result<Res, E> {
+    svc.call(req).await
 }
 
 #[cfg(test)]
