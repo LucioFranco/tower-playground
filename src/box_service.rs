@@ -78,7 +78,7 @@ mod tests {
             res.send_res(());
         });
 
-        let svc = BoxService::new(mock);
+        let svc = BoxService::new::<mock::Mock<(), ()>>(mock);
 
         svc.call(()).await.unwrap();
 
