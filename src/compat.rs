@@ -3,12 +3,13 @@ use std::{sync::Arc, task::Poll};
 type BoxFuture<'a, T> = std::pin::Pin<Box<dyn 'a + std::future::Future<Output = T>>>;
 
 pub struct Compat<S> {
-    inner: Arc<S>,
+    inner: S,
 }
 
 impl<S, Request> tower_service::Service<Request> for Compat<S>
 where
-    S: crate::Service<Request>,
+    S: crate::Service<Request> + Clone + 'static,
+    Request: 'static
 {
     type Response = S::Res;
     type Error = S::Error;
@@ -27,3 +28,5 @@ where
         Box::pin(async move { inner.call(req).await })
     }
 }
+
+

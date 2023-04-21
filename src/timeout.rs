@@ -28,3 +28,14 @@ crate::layer! {
         duration: Duration,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn timeout() {
+        let (mock, mut handle) = crate::mock::pair::<(), ()>();
+       let layer = TimeoutLayer { duration: Duration::from_secs(1), }; 
+    }
+}

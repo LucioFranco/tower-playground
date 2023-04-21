@@ -1,11 +1,11 @@
 #![allow(warnings)]
 #![feature(async_fn_in_trait)]
-#![feature(associated_return_type_bounds)]
+#![feature(return_type_notation)]
 
 pub mod box_service;
 pub mod buffer;
 pub mod client;
-// pub mod compat;
+pub mod compat;
 pub mod limit;
 pub mod mock;
 pub mod retry;
@@ -102,8 +102,8 @@ macro_rules! layer {
             $field:ident: $field_ty:ty
         ),+ $(,)?
     }) => {
-        struct $name {
-            $($field: $field_ty),+
+        pub struct $name {
+            pub $($field: $field_ty),+
         }
 
         impl<S> crate::Layer<S> for $name {

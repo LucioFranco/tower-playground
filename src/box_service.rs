@@ -12,6 +12,7 @@ impl<'a, Req, Res, Err> BoxService<'a, Req, Res, Err> {
         T: 'a + Service<Req, Res = Res, Error = Err, call(): Send> + Send,
         T::Error: Send,
         T::Res: Send,
+        Req: Send,
     {
         Self {
             b: Box::new(service),
@@ -34,7 +35,7 @@ trait DynService<Req> {
 
     fn call<'a>(&'a self, req: Req) -> BoxFuture<'a, Result<Self::Res, Self::Error>>
     where
-        Req: 'a + Send;
+        Req: 'a;
 }
 
 impl<T, Req> DynService<Req> for T
@@ -43,13 +44,14 @@ where
     T::Res: Send,
     T::Error: Send,
     T: Service<Req, call(): Send>,
+    Req: Send,
 {
     type Res = <T as Service<Req>>::Res;
     type Error = <T as Service<Req>>::Error;
 
     fn call<'a>(&'a self, req: Req) -> BoxFuture<'a, Result<Self::Res, Self::Error>>
     where
-        Req: 'a + Send,
+        Req: 'a,
     {
         // Box::pin(call_send(&self, req))
         Box::pin(self.call(req))
